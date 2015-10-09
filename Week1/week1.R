@@ -39,12 +39,21 @@ if(!file.exists("ss06pid.csv")) {
 
 DT <- fread("ss06pid.csv", sep=",", header=T)
 
-system.time(mean(DT[DT$SEX==1,]$pwgtp15)) + system.time(mean(DT[DT$SEX==2,]$pwgtp15))
-system.time(mean(DT$pwgtp15,by=DT$SEX))
-system.time(tapply(DT$pwgtp15,DT$SEX,mean))
-system.time(DT[,mean(pwgtp15),by=SEX])
-system.time(sapply(split(DT$pwgtp15,DT$SEX),mean))
-system.time(rowMeans(DT)[DT$SEX==1]) + system.time(rowMeans(DT)[DT$SEX==2])
+
+mean(DT[DT$SEX==1,]$pwgtp15); mean(DT[DT$SEX==2,]$pwgtp15)     		
+mean(DT$pwgtp15,by=DT$SEX) 	# wrong answer		
+tapply(DT$pwgtp15,DT$SEX,mean) 			
+DT[,mean(pwgtp15),by=SEX] 
+sapply(split(DT$pwgtp15,DT$SEX),mean) 			
+rowMeans(DT)[DT$SEX==1]; rowMeans(DT)[DT$SEX==2]  # intentional error
+
+
+system.time(replicate(100, mean(DT[DT$SEX==1,]$pwgtp15) + 
+                mean(DT[DT$SEX==2,]$pwgtp15)))
+system.time(replicate(1000, tapply(DT$pwgtp15,DT$SEX,mean)))
+system.time(replicate(1000, DT[,mean(pwgtp15),by=SEX]))
+system.time(replicate(1000, sapply(split(DT$pwgtp15,DT$SEX),mean)))
+
 
 
 
