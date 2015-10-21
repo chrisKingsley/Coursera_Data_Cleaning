@@ -10,17 +10,16 @@ colnames(activityLabels) <- c("code","label")
 
 # load subject and variable names
 features <- read.table("UCI HAR Dataset/features.txt", header=F, stringsAsFactors=F)[[2]]
-features <- gsub("\\(|\\)", "", features)
+feature.idx <- grep("mean\\(\\)|std\\(\\)", features)
+features <- gsub("\\(|\\)", "", features[feature.idx])
 
 
 # function for loading test/train data into data frame
-loadDataFile <- function(setType, features, activityLabels) {
+loadDataFile <- function(setType, features, feature.idx, activityLabels) {
     # load data file and add column names
     dataFile <- sprintf("UCI HAR Dataset/%s/X_%s.txt", setType, setType)
-    data <- read.table(dataFile, header=F, stringsAsFactors=F)
-    feature.idx <- grep("mean|std", features, ignore.case=T)
-    data <- data[, feature.idx]
-    colnames(data) <- features[feature.idx]
+    data <- read.table(dataFile, header=F, stringsAsFactors=F)[, feature.idx]
+    colnames(data) <- features
     data$setLabel <- setType
     
     # add activity names
@@ -39,8 +38,8 @@ loadDataFile <- function(setType, features, activityLabels) {
 
 
 # load training/test sets and merge
-trainingSet <- loadDataFile("train", features, activityLabels)
-testSet <- loadDataFile("test", features, activityLabels)
+trainingSet <- loadDataFile("train", features, feature.idx, activityLabels)
+testSet <- loadDataFile("test", features, feature.idx, activityLabels)
 mergedData <- rbind(trainingSet, testSet)
 
 
