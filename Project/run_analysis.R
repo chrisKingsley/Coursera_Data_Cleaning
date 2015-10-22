@@ -1,6 +1,8 @@
 # This script contains the R code necessary to complete the course project
 # for Getting and Cleaning Data
 
+library(dplyr)
+library(tidyr)
 
 # load activity table
 activityLabels <- read.table("UCI HAR Dataset/activity_labels.txt", header=F,
@@ -14,7 +16,7 @@ feature.idx <- grep("mean\\(\\)|std\\(\\)", features)
 features <- gsub("\\(|\\)", "", features[feature.idx])
 
 
-# function for loading test/train data into data frame
+# function for loading train or test data into data frame
 loadDataFile <- function(setType, features, feature.idx, activityLabels) {
     # load data file and add column names
     dataFile <- sprintf("UCI HAR Dataset/%s/X_%s.txt", setType, setType)
@@ -37,9 +39,16 @@ loadDataFile <- function(setType, features, feature.idx, activityLabels) {
 }
 
 
-# load training/test sets and merge
+# load training/test sets
 trainingSet <- loadDataFile("train", features, feature.idx, activityLabels)
 testSet <- loadDataFile("test", features, feature.idx, activityLabels)
-mergedData <- rbind(trainingSet, testSet)
 
 
+# combine the two sets, convert to tidy table, group by subject/activity/variable
+# and calculate mean value of the variable per group
+groupedMeanVals <- rbind(trainingSet, testSet) %>%
+    gather(key=variable, value=value, -c(setLabel,subjectId,activity)) %>%
+    group_by(subjectId, activity, variable) %>%
+    summarize(meanValue = mean(value, na.rm=T))
+
+write.table(groupedMeanVals, "groupedMeanVals.txt", row.names=F, quote=F, sep="\t")
